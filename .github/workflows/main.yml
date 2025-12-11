@@ -1,29 +1,30 @@
-on: [push]
+name: Build LaTeX PDF
+
+on:
+  push:
+    paths:
+      - "**.tex"
+  pull_request:
 
 jobs:
-  hello_world_job:
+  build-pdf:
     runs-on: ubuntu-latest
-    name: A job to say hello
+
     steps:
-      - name: Hello world action step
-        id: hello
-        uses: raeichho/learning-github-actions@main
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install TeX Live (pdflatex)
+        run: |
+          sudo apt update
+          sudo apt install -y texlive-latex-base texlive-latex-recommended texlive-latex-extra
+
+      - name: Compile LaTeX document
+        run: |
+          pdflatex -interaction=nonstopmode article.tex
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
         with:
-          who-to-greet: 'Mona the Octocat'
-      # Use the output from the `hello` step
-      - name: Get the output time
-        run: echo "The time was ${{ steps.hello.outputs.time }}"
-
-
-  build-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
-
-      - name: Generate PDF document
-        uses: hspaans/latexmk-action@v2.1.0
-        with:
-          format: pdf
-          filename: article.tex
-          options: -shell-escape---
+          name: pdf
+          path: article.pdf
